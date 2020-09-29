@@ -1,3 +1,4 @@
+import json
 import types
 from logging import getLogger
 
@@ -36,14 +37,33 @@ class Harvest(p.SingletonPlugin, DefaultDatasetForm):
 
     ## IPackageController
 
+    def _get_harvest_source_state(data_dict):
+        # if use_external_harvester_app is True we set as inactive locally
+        # and it will be executed by some external application (e.g. NG harvester)
+        cfg_str = data_dict.get('config', '{}')
+        try:
+            cfg = json.loads(cfg_str)
+        except Exception as e:
+            log.error('Failed to read harvest source configuration: {} {}'.format(cfg_str, str(e)))
+            return 'active'
+
+        # this harvest source config value will be also readed 
+        # by and externall application and run it without conflict.
+        # By setting as inactive we stop all jobs and avoid to run locally in the future.
+        ret = 'inactive' if cfg.get('harvester_app', 'CKAN') != 'CKAN' else 'active'
+        
+        return ret
+
     def after_create(self, context, data_dict):
         if 'type' in data_dict and data_dict['type'] == DATASET_TYPE_NAME and not self.startup:
             # Create an actual HarvestSource object
+            data_dict['state'] = _get_harvest_source_state(data_dict)
             _create_harvest_source_object(context, data_dict)
 
     def after_update(self, context, data_dict):
         if 'type' in data_dict and data_dict['type'] == DATASET_TYPE_NAME:
             # Edit the actual HarvestSource object
+            data_dict['state'] = _get_harvest_source_state(data_dict)
             _update_harvest_source_object(context, data_dict)
 
     def after_delete(self, context, data_dict):

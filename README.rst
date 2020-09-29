@@ -233,6 +233,11 @@ field. The currently supported configuration options are:
     lower-case ones, and spaces replaced with dashes. Setting this option to False
     gives the same effect as leaving it unset.
 
+*   harvester_app: inactive | CKAN | NG Harvester | Other external app. 
+    Defaults (not set) is _CKAN_. If use _"NG Harvester"_ or other external app this 
+    source will be set _inactive_ locally. Use _"inactive"_ to stop harvesting 
+    temporary from this source.
+
 Here is an example of a configuration object (the one that must be entered in
 the configuration field)::
 
