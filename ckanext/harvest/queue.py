@@ -468,6 +468,10 @@ def fetch_callback(channel, method, header, body):
         log.error('Harvest object does not exist: %s' % id)
         channel.basic_ack(method.delivery_tag)
         return False
+    if obj.state in ["COMPLETE", "ERROR"]:
+        log.error('Harvest object was previously fetched: %s' % id)
+        channel.basic_ack(method.delivery_tag)
+        return False
 
     obj.retry_times += 1
     obj.save()
