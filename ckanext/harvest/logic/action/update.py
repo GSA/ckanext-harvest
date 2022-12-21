@@ -2,6 +2,7 @@ import hashlib
 import logging
 import datetime
 import json
+import html
 
 from pylons import config
 from paste.deploy.converters import asbool
@@ -621,6 +622,7 @@ def harvest_jobs_run(context, data_dict):
                         if (job_error != ''):
                             msg += 'Job Errors\n' + job_error + '\n\n'
 
+                        msg = html.unescape(msg)
                         msg += '\n--\nYou are receiving this email because you are currently the administrator for your organization in Data.gov. Please do not reply to this email as it was sent from a non-monitored address. Please feel free to contact us at www.data.gov/contact for any questions or feedback.'
                         msg += '\n\nIf you have an admin/editor account in Data.gov catalog, you can view the detailed job report at the following url. You will need to log in first using link https://catalog.data.gov/user/login, then go to this url:'
                         msg += '\n\nhttps://admin-' + job_url
