@@ -151,12 +151,27 @@ class Harvest(p.SingletonPlugin, DefaultDatasetForm, DefaultTranslation):
             except ValueError:
                 pkg_dict.pop('status', None)
 
-        harvest_object = model.Session.query(HarvestObject) \
+        # workaround to fix the issue with the wrong harvest object selected
+        # wrong_harvest_object = model.Session.query(HarvestObject) \
+        #     .filter(HarvestObject.package_id == pkg_dict["id"]) \
+        #     .filter(
+        #         HarvestObject.current == True # noqa
+        #     ).order_by(HarvestObject.import_finished.desc()) \
+        #     .first()
+        # log.info("*********************************************")
+        # log.info("wrong harvest_object selected. True is: %s", wrong_harvest_object.current)
+        # log.info("*********************************************")
+
+        harvest_objects = model.Session.query(HarvestObject) \
             .filter(HarvestObject.package_id == pkg_dict["id"]) \
-            .filter(
-                HarvestObject.current == True # noqa
-            ).order_by(HarvestObject.import_finished.desc()) \
-            .first()
+            .order_by(HarvestObject.import_finished.desc()) \
+            .all()
+
+        harvest_object = None
+        for obj in harvest_objects:
+            if obj.current:
+                harvest_object = obj
+                break
 
         if not harvest_object:
             return pkg_dict
